@@ -81,6 +81,7 @@ class Polygons_scene():
           start = point_2_to_xy(self.path[i][j] + offset)
           end = point_2_to_xy(self.path[i + 1][j] + offset)
           s.line.setZValue(2)
+          gui.add_disc(0.1, *end, fill_color=Qt.blue)
           animations.append(gui.linear_translation_animation(self.gui_robots[j], *start, *end))
         anim = gui.parallel_animation(*animations)
         gui.queue_animation(anim)
