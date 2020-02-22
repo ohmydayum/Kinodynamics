@@ -24,13 +24,13 @@ class Polygons_scene():
     gui.clear_scene()
     self.gui_robots = []
     for i in range(len(self.robots)):
-      self.gui_robots.append(gui.add_polygon([point_2_to_xy(p) for p in self.robots[i]], colors[i%len(colors)]))
+      self.gui_robots.append(gui.add_polygon([point_2_to_xy(p) for p in self.robots[i]], Qt.yellow))
     self.gui_obstacles = []
     for obstacle in self.obstacles:
       self.gui_obstacles.append(gui.add_polygon([point_2_to_xy(p) for p in obstacle], Qt.darkGray))
     self.gui_destinations = []
     for i in range(len(self.destinations)):
-        self.gui_destinations.append(gui.add_disc(0.05, *point_2_to_xy(self.destinations[i]), colors[i%len(colors)]))
+        self.gui_destinations.append(gui.add_disc(0.05, *point_2_to_xy(self.destinations[i]), Qt.green))
 
   def load_scene(self, filename):
     scene = read_input.read_polygon_scene(filename)
@@ -77,7 +77,7 @@ class Polygons_scene():
         for j in range(self.number_of_robots):
           start = point_2_to_xy(self.path[i][j])
           end = point_2_to_xy(self.path[i+1][j])
-          s = gui.add_segment(*start, *end, colors[j%len(colors)])
+          s = gui.add_segment(*start, *end, Qt.magenta)
           start = point_2_to_xy(self.path[i][j] + offset)
           end = point_2_to_xy(self.path[i + 1][j] + offset)
           s.line.setZValue(2)
