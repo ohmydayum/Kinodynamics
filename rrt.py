@@ -87,7 +87,7 @@ def point2_to_list(p):
     return [p.x().to_double(), p.y().to_double()]
 
 
-def generate_path(path, robots, obstacles, destinations):
+def generate_path(path, robots, obstacles, destinations, other_edges):
     x_min, x_max, y_min, y_max = get_scene_limits(obstacles)
     K = 20000
     delta_t = 1
@@ -109,6 +109,7 @@ def generate_path(path, robots, obstacles, destinations):
         if is_path_valid(x_near, x_new, obstacles_polygons):
             current_edge = Edge(previous_edge=edge_near, steering=u_rand, target=x_new)
             edges.append(current_edge)
+            other_edges.append(current_edge)
     current_edge = edges[-1]
     while current_edge:
         x = current_edge.target[0]
