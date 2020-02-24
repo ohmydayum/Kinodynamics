@@ -19,6 +19,7 @@ class Polygons_scene():
     self.destinations = []
     self.gui_destinations = []
     self.path = []
+    self.other_edges = []
 
   def draw_scene(self):
     gui.clear_scene()
@@ -72,6 +73,9 @@ class Polygons_scene():
       anim = gui.parallel_animation(*animations)
       gui.queue_animation(anim)
     else:
+      for e in self.other_edges:
+          s = gui.add_segment(*(e.previous_edge.target), *e.target, Qt.red)
+
       for i in range(len(self.path) - 1):
         animations = []
         for j in range(self.number_of_robots):
@@ -81,7 +85,7 @@ class Polygons_scene():
           start = point_2_to_xy(self.path[i][j] + offset)
           end = point_2_to_xy(self.path[i + 1][j] + offset)
           s.line.setZValue(2)
-          gui.add_disc(0.1, *end, fill_color=Qt.blue)
+          gui.add_disc(0.07, *end, fill_color=Qt.blue)
           animations.append(gui.linear_translation_animation(self.gui_robots[j], *start, *end))
         anim = gui.parallel_animation(*animations)
         gui.queue_animation(anim)
@@ -163,10 +167,11 @@ def set_up_scene():
 
 def generate_path():
   ps.path = []
+  ps.other_edges = []
   gui.clear_queue()
   path_name = gui.get_field(1)
   gp = importlib.import_module(path_name)
-  gp.generate_path(ps.path, ps.robots, ps.obstacles, ps.destinations)
+  gp.generate_path(ps.path, ps.robots, ps.obstacles, ps.destinations, ps.other_edges)
   print("Generated path via", path_name + ".generate_path")
   ps.set_up_animation()
 
@@ -191,7 +196,7 @@ if __name__ == "__main__":
   ps = Polygons_scene()
   gui.set_program_name("Multi-robot Motion Planning")
   gui.set_field(0, "scene0")
-  gui.set_field(1, "solver")
+  gui.set_field(1, "rrt")
   gui.set_field(2, "path0.txt")
   gui.set_logic(0, set_up_scene)
   gui.set_button_text(0, "Load scene")
