@@ -3,7 +3,7 @@ import time
 
 import numpy as np
 from scene_parser import parse_scene_file_path
-from arr2_epec_seg_ex import Point_2, Polygon_2, intersection, Segment_2
+from arr2_epec_seg_ex import Point_2, Polygon_2, intersection, Segment_2, K_neighbor_search, Euclidean_distance, FT, Gmpq, Kd_tree, Point_d
 
 
 def log(o):
@@ -31,7 +31,7 @@ def get_scene_limits(obstacles):
 
 
 def get_random_point(x_min, x_max, y_min, y_max):
-    return [random.uniform(x_min, x_max), random.uniform(y_min, y_max)]
+    return list_to_point_d([random.uniform(x_min, x_max), random.uniform(y_min, y_max)])
 
 
 class Edge(object):
@@ -42,24 +42,32 @@ class Edge(object):
         self.state = state
 
 
-# TODO
-def find_closest_edge(point, edges):
-    best_edge = None
-    best_distance = -1
-    for e in edges:
-        p = e.target
-        current_distance = np.linalg.norm(np.asarray(p)-np.asarray(point))
-        if current_distance < best_distance or not best_edge:
-            best_edge = e
-            best_distance = current_distance
-    return best_edge
+def get_closest_k_neighbours(p, tree, k):
+    search = K_neighbor_search(tree, p, k, FT(Gmpq(1.0)), True, Euclidean_distance(), False)
+    l = []
+    search.k_neighbors(l)
+    return [p_c for p_c, _ in l]
 
+
+def point2_to_d(p):
+    p_d = point2_to_list(p)
+    return Point_d(2, [FT(e) for e in p_d])
+
+
+# TODO
+def point_d_to_list(p_d):
+    return [p_d[0], p_d[1]]
+
+
+def find_closest_edge(point, edges, tree):
+    neighbour = get_closest_k_neighbours(point, tree, 1)[0]
+    neighbour = point_d_to_list(neighbour)
+    return list(filter(lambda e: all([FT(e1)==e2 for e1,e2 in zip(e.target, neighbour)]), edges))[0]
 
 def get_random_steering():
     return [random.uniform(0, 1), random.uniform(0, 2*np.pi)]
 
 
-# TODO
 def get_new_state(state, steering, driver):
     a_x = driver["max_force"] / driver["mass"] * steering[0] * np.cos(steering[1])
     a_y = driver["g"] / driver["mass"] + driver["max_force"] / driver["mass"] * steering[0] * np.sin(steering[1])
@@ -97,26 +105,31 @@ def point2_to_list(p):
     return [p.x().to_double(), p.y().to_double()]
 
 
+def list_to_point_d(l):
+    return Point_d(len(l), [FT(e) for e in l])
+
+
 def generate_path(path, robots, obstacles, destinations, other_edges):
     t_start = time.time()
     x_min, x_max, y_min, y_max = get_scene_limits(obstacles)
     destination = point2_to_list(destinations[0])
     obstacles_polygons = [point2_list_to_polygon_2(obstacle) for obstacle in obstacles]
-    K = 3000
-    driver = {"mass": 1, "delta_t": 0.1, "max_force": 20, "g": -9.8}
+    K = 10000
+    driver = {"mass": 1, "delta_t": 0.01, "max_force": 20, "g": -9.8}
     robot_initial_position = point2_to_list(robots[0][0])
     robot_initial_speed = [0, 0]
     robot_initial_acceleration = [0, 0]
     robot_initial_state = robot_initial_position + robot_initial_speed + robot_initial_acceleration
     init_edge = Edge(previous_edge=None, steering=[0, 0], target=robot_initial_position, state=robot_initial_state)
     edges = [init_edge]
+    points_kd_tree = Kd_tree([point2_to_d(robots[0][0])])
     for i in range(K):
         print("#", i, "/", K)
         last_target = edges[-1].target
         if are_close_enough(last_target, destination, epsilon=2):
             break
         x_rand = get_random_point(x_min, x_max, y_min, y_max)
-        edge_near = find_closest_edge(x_rand, edges)
+        edge_near = find_closest_edge(x_rand, edges, points_kd_tree)
         x_near = edge_near.target
         state_near = edge_near.state
         u_rand = get_random_steering()
@@ -126,6 +139,7 @@ def generate_path(path, robots, obstacles, destinations, other_edges):
             current_edge = Edge(previous_edge=edge_near, steering=u_rand, target=x_new, state=state_new)
             edges.append(current_edge)
             other_edges.append(current_edge)
+            points_kd_tree.insert([list_to_point_d(x_new)])
     current_edge = edges[-1]
     while current_edge:
         x = current_edge.target[0]
