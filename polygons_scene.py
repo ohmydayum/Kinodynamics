@@ -81,7 +81,7 @@ class Polygons_scene():
         for j in range(self.number_of_robots):
           start = point_2_to_xy(self.path[i][j])
           end = point_2_to_xy(self.path[i+1][j])
-          s = gui.add_segment(*start, *end, Qt.magenta)
+          s = gui.add_segment(*start, *end, Qt.green)
           start = point_2_to_xy(self.path[i][j] + offset)
           end = point_2_to_xy(self.path[i + 1][j] + offset)
           s.line.setZValue(2)
@@ -194,7 +194,7 @@ if __name__ == "__main__":
   app = QtWidgets.QApplication(sys.argv)
   gui = GUI()
   ps = Polygons_scene()
-  gui.set_program_name("Multi-robot Motion Planning")
+  gui.set_program_name("Kinodynamics- Dor Israeli")
   gui.set_field(0, "scene0")
   gui.set_field(1, "rrt")
   gui.set_field(2, "path0.txt")

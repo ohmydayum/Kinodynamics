@@ -62,7 +62,7 @@ def get_random_steering():
 # TODO
 def get_new_state(state, steering, driver):
     a_x = driver["max_force"] / driver["mass"] * steering[0] * np.cos(steering[1])
-    a_y = driver["max_force"] / driver["mass"] * steering[0] * np.sin(steering[1])
+    a_y = driver["g"] / driver["mass"] + driver["max_force"] / driver["mass"] * steering[0] * np.sin(steering[1])
 
     v_x = state[2] + driver["delta_t"] * a_x
     v_y = state[3] + driver["delta_t"] * a_y
@@ -71,6 +71,7 @@ def get_new_state(state, steering, driver):
     y = state[1] + driver["delta_t"] * v_y + driver["delta_t"]**2 * a_y
 
     return [x, y, v_x, v_y, a_x, a_y]
+
 
 def point2_list_to_polygon_2(lst):
     l = []
@@ -101,8 +102,8 @@ def generate_path(path, robots, obstacles, destinations, other_edges):
     x_min, x_max, y_min, y_max = get_scene_limits(obstacles)
     destination = point2_to_list(destinations[0])
     obstacles_polygons = [point2_list_to_polygon_2(obstacle) for obstacle in obstacles]
-    K = 10000
-    driver = {"mass": 1, "delta_t": 0.1, "max_force": 1}
+    K = 3000
+    driver = {"mass": 1, "delta_t": 0.1, "max_force": 20, "g": -9.8}
     robot_initial_position = point2_to_list(robots[0][0])
     robot_initial_speed = [0, 0]
     robot_initial_acceleration = [0, 0]
