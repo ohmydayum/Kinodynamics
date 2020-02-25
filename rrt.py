@@ -1,4 +1,6 @@
 import random
+import time
+
 import numpy as np
 from scene_parser import parse_scene_file_path
 from arr2_epec_seg_ex import Point_2, Polygon_2, intersection, Segment_2
@@ -33,10 +35,11 @@ def get_random_point(x_min, x_max, y_min, y_max):
 
 
 class Edge(object):
-    def __init__(self, previous_edge, steering, target):
+    def __init__(self, previous_edge, steering, target, state):
         self.previous_edge = previous_edge
         self.steering = steering
         self.target = target
+        self.state = state
 
 
 # TODO
@@ -57,11 +60,17 @@ def get_random_steering():
 
 
 # TODO
-def get_new_state(x_near, u_rand, delta_t):
-    x = x_near[0] + delta_t * u_rand[0] * np.cos(u_rand[1])
-    y = x_near[1] + delta_t * u_rand[0] * np.sin(u_rand[1])
-    return [x, y]
+def get_new_state(state, steering, driver):
+    a_x = driver["max_force"] / driver["mass"] * steering[0] * np.cos(steering[1])
+    a_y = driver["max_force"] / driver["mass"] * steering[0] * np.sin(steering[1])
 
+    v_x = state[2] + driver["delta_t"] * a_x
+    v_y = state[3] + driver["delta_t"] * a_y
+
+    x = state[0] + driver["delta_t"] * v_x + driver["delta_t"]**2 * a_x
+    y = state[1] + driver["delta_t"] * v_y + driver["delta_t"]**2 * a_y
+
+    return [x, y, v_x, v_y, a_x, a_y]
 
 def point2_list_to_polygon_2(lst):
     l = []
@@ -88,26 +97,32 @@ def point2_to_list(p):
 
 
 def generate_path(path, robots, obstacles, destinations, other_edges):
+    t_start = time.time()
     x_min, x_max, y_min, y_max = get_scene_limits(obstacles)
-    K = 20000
-    delta_t = 1
-    robot_initial_position = point2_to_list(robots[0][0])
     destination = point2_to_list(destinations[0])
     obstacles_polygons = [point2_list_to_polygon_2(obstacle) for obstacle in obstacles]
-    init_edge = Edge(previous_edge=None, steering=[0, 0], target=robot_initial_position)
+    K = 10000
+    driver = {"mass": 1, "delta_t": 0.1, "max_force": 1}
+    robot_initial_position = point2_to_list(robots[0][0])
+    robot_initial_speed = [0, 0]
+    robot_initial_acceleration = [0, 0]
+    robot_initial_state = robot_initial_position + robot_initial_speed + robot_initial_acceleration
+    init_edge = Edge(previous_edge=None, steering=[0, 0], target=robot_initial_position, state=robot_initial_state)
     edges = [init_edge]
     for i in range(K):
         print("#", i, "/", K)
         last_target = edges[-1].target
-        if are_close_enough(last_target, destination, epsilon=1):
+        if are_close_enough(last_target, destination, epsilon=2):
             break
         x_rand = get_random_point(x_min, x_max, y_min, y_max)
         edge_near = find_closest_edge(x_rand, edges)
         x_near = edge_near.target
+        state_near = edge_near.state
         u_rand = get_random_steering()
-        x_new = get_new_state(x_near, u_rand, delta_t)
+        state_new = get_new_state(state_near, u_rand, driver)
+        x_new = state_new[0:2]
         if is_path_valid(x_near, x_new, obstacles_polygons):
-            current_edge = Edge(previous_edge=edge_near, steering=u_rand, target=x_new)
+            current_edge = Edge(previous_edge=edge_near, steering=u_rand, target=x_new, state=state_new)
             edges.append(current_edge)
             other_edges.append(current_edge)
     current_edge = edges[-1]
@@ -117,3 +132,5 @@ def generate_path(path, robots, obstacles, destinations, other_edges):
         path.append([Point_2(x, y)])
         current_edge = current_edge.previous_edge
     path.reverse()
+    t_end = time.time()
+    print("Running time:", (t_end-t_start))

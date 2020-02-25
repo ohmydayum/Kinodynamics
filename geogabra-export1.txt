@@ -1,0 +1,76 @@
+\documentclass[10pt]{article}
+\usepackage{pstricks-add}
+\pagestyle{empty}
+\begin{document}
+\newrgbcolor{xdxdff}{0.49019607843137253 0.49019607843137253 1}
+\newrgbcolor{ududff}{0.30196078431372547 0.30196078431372547 1}
+\newrgbcolor{zzttqq}{0.6 0.2 0}
+\psset{xunit=1cm,yunit=1cm,algebraic=true,dimen=middle,dotstyle=o,dotsize=5pt 0,linewidth=1.6pt,arrowsize=3pt 2,arrowinset=0.25}
+\begin{pspicture*}(-2.98,-5.98)(27.66,11.9)
+\multips(0,-5)(0,1){18}{\psline[linestyle=dashed,linecap=1,dash=1.5pt 1.5pt,linewidth=0.4pt,linecolor=lightgray]{c-c}(-2.98,0)(27.66,0)}
+\multips(-2,0)(1,0){31}{\psline[linestyle=dashed,linecap=1,dash=1.5pt 1.5pt,linewidth=0.4pt,linecolor=lightgray]{c-c}(0,-5.98)(0,11.9)}
+\psaxes[labelFontSize=\scriptstyle,xAxis=true,yAxis=true,Dx=1,Dy=1,ticksize=-2pt 0,subticks=2]{->}(0,0)(-2.98,-5.98)(27.66,11.9)
+\pspolygon[linewidth=2pt,linecolor=zzttqq,fillcolor=zzttqq,fillstyle=solid,opacity=0.1](0,0)(0,10)(-1,10)(-1,0)
+\pspolygon[linewidth=2pt,linecolor=zzttqq,fillcolor=zzttqq,fillstyle=solid,opacity=0.1](-1,-1)(11,-1)(11,0)(-1,0)
+\pspolygon[linewidth=2pt,linecolor=zzttqq,fillcolor=zzttqq,fillstyle=solid,opacity=0.1](-1,11)(-1,10)(11,10)(11,11)
+\pspolygon[linewidth=2pt,linecolor=zzttqq,fillcolor=zzttqq,fillstyle=solid,opacity=0.1](10,10)(10,0)(11,0)(11,10)
+\psline[linewidth=2pt,linecolor=zzttqq](0,0)(0,10)
+\psline[linewidth=2pt,linecolor=zzttqq](0,10)(-1,10)
+\psline[linewidth=2pt,linecolor=zzttqq](-1,10)(-1,0)
+\psline[linewidth=2pt,linecolor=zzttqq](-1,0)(0,0)
+\psline[linewidth=2pt,linecolor=zzttqq](-1,-1)(11,-1)
+\psline[linewidth=2pt,linecolor=zzttqq](11,-1)(11,0)
+\psline[linewidth=2pt,linecolor=zzttqq](11,0)(-1,0)
+\psline[linewidth=2pt,linecolor=zzttqq](-1,0)(-1,-1)
+\psline[linewidth=2pt,linecolor=zzttqq](-1,11)(-1,10)
+\psline[linewidth=2pt,linecolor=zzttqq](-1,10)(11,10)
+\psline[linewidth=2pt,linecolor=zzttqq](11,10)(11,11)
+\psline[linewidth=2pt,linecolor=zzttqq](11,11)(-1,11)
+\psline[linewidth=2pt,linecolor=zzttqq](10,10)(10,0)
+\psline[linewidth=2pt,linecolor=zzttqq](10,0)(11,0)
+\psline[linewidth=2pt,linecolor=zzttqq](11,0)(11,10)
+\psline[linewidth=2pt,linecolor=zzttqq](11,10)(10,10)
+\begin{scriptsize}
+\psdots[dotsize=4pt 0,dotstyle=*,linecolor=darkgray](0,0)
+\rput[bl](0.08,0.16){\darkgray{$A$}}
+\psdots[dotstyle=*,linecolor=xdxdff](0,10)
+\rput[bl](0.08,10.2){\xdxdff{$B$}}
+\psdots[dotstyle=*,linecolor=ududff](-1,10)
+\rput[bl](-0.92,10.2){\ududff{$C$}}
+\psdots[dotstyle=*,linecolor=xdxdff](-1,0)
+\rput[bl](-0.92,0.2){\xdxdff{$D$}}
+\rput[bl](0.3,5){\zzttqq{$a$}}
+\rput[bl](-0.52,10.32){\zzttqq{$b$}}
+\rput[bl](-1.34,5){\zzttqq{$c$}}
+\rput[bl](-0.52,-0.32){\zzttqq{$d$}}
+\psdots[dotstyle=*,linecolor=ududff](-1,-1)
+\rput[bl](-0.92,-0.8){\ududff{$E$}}
+\psdots[dotstyle=*,linecolor=ududff](11,-1)
+\rput[bl](11.08,-0.8){\ududff{$F$}}
+\psdots[dotstyle=*,linecolor=xdxdff](11,0)
+\rput[bl](11.08,0.2){\xdxdff{$G$}}
+\rput[bl](4.98,-1.32){\zzttqq{$e$}}
+\rput[bl](11.3,-0.5){\zzttqq{$f$}}
+\rput[bl](4.98,0.32){\zzttqq{$g$}}
+\rput[bl](-1.34,-0.5){\zzttqq{$d_1$}}
+\psdots[dotstyle=*,linecolor=ududff](-1,11)
+\rput[bl](-0.92,11.2){\ududff{$H$}}
+\psdots[dotstyle=*,linecolor=ududff](11,10)
+\rput[bl](11.08,10.2){\ududff{$I$}}
+\psdots[dotstyle=*,linecolor=ududff](11,11)
+\rput[bl](11.08,11.2){\ududff{$J$}}
+\rput[bl](-1.34,10.5){\zzttqq{$h$}}
+\rput[bl](4.98,9.68){\zzttqq{$c_1$}}
+\rput[bl](11.3,10.5){\zzttqq{$i$}}
+\rput[bl](4.98,11.32){\zzttqq{$j$}}
+\psdots[dotstyle=*,linecolor=xdxdff](10,10)
+\rput[bl](10.08,10.2){\xdxdff{$K$}}
+\psdots[dotstyle=*,linecolor=xdxdff](10,0)
+\rput[bl](10.08,0.2){\xdxdff{$L$}}
+\rput[bl](9.66,5){\zzttqq{$k$}}
+\rput[bl](10.48,-0.32){\zzttqq{$l$}}
+\rput[bl](11.3,5){\zzttqq{$g_1$}}
+\rput[bl](10.48,10.32){\zzttqq{$i_1$}}
+\end{scriptsize}
+\end{pspicture*}
+\end{document}
