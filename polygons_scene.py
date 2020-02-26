@@ -74,7 +74,7 @@ class Polygons_scene():
       gui.queue_animation(anim)
     else:
       for e in self.other_edges:
-          s = gui.add_segment(*(e.previous_edge.target), *e.target, Qt.red)
+          gui.add_segment(*(e.previous_edge.target), *e.target, Qt.magenta)
 
       for i in range(len(self.path) - 1):
         animations = []
@@ -171,17 +171,17 @@ def generate_path():
   gui.clear_queue()
   path_name = gui.get_field(1)
   gp = importlib.import_module(path_name)
-  gp.generate_path(ps.path, ps.robots, ps.obstacles, ps.destinations, ps.other_edges)
+  gp.generate_path(ps.path, ps.robots, ps.obstacles, ps.destinations, ps.other_edges, OPTIONS)
   print("Generated path via", path_name + ".generate_path")
   ps.set_up_animation()
 
-def load_path():
-  ps.path = []
-  gui.clear_queue()
-  path_name = gui.get_field(2)
-  read_input.load_path(ps.path, path_name, ps.number_of_robots)
-  print("Loaded path from", path_name)
-  ps.set_up_animation()
+# def load_path():
+#   ps.path = []
+#   gui.clear_queue()
+#   path_name = gui.get_field(2)
+#   read_input.load_path(ps.path, path_name, ps.number_of_robots)
+#   print("Loaded path from", path_name)
+#   ps.set_up_animation()
 
 def is_path_valid():
   ps.is_path_valid()
@@ -189,27 +189,38 @@ def is_path_valid():
 def animate_path():
   gui.play_queue()
 
+
+def set_option(n, key, options):
+  def set_specific_key_to_n():
+    options[key] = float(gui.get_field(n))
+  return set_specific_key_to_n
+
+
+def ez_option(options, gui, n, key, value):
+  gui.set_button_text(n, key)
+  gui.set_field(n, str(value))
+  gui.set_logic(n, lambda x: options.update({key: float(gui.get_field(n))}))
+  options[key] = float(value)
+
+
 if __name__ == "__main__":
   import sys
   app = QtWidgets.QApplication(sys.argv)
   gui = GUI()
+  OPTIONS = {}
   ps = Polygons_scene()
   gui.set_program_name("Kinodynamics- Dor Israeli")
-  gui.set_field(0, "scene0")
-  gui.set_field(1, "rrt")
-  gui.set_field(2, "path0.txt")
-  gui.set_logic(0, set_up_scene)
   gui.set_button_text(0, "Load scene")
-  gui.set_logic(1, generate_path)
+  gui.set_field(0, "scene0")
+  gui.set_logic(0, set_up_scene)
   gui.set_button_text(1, "Generate path")
-  gui.set_logic(2, load_path)
-  gui.set_button_text(2, "Load path")
-  gui.set_logic(3, animate_path)
-  gui.set_button_text(3, "Animate movement along path")
-  gui.set_logic(4, is_path_valid)
-  gui.set_button_text(4, "Check path validity")
-  gui.set_button_text(5, "Unused")
-  gui.set_button_text(6, "Unused")
-  gui.set_button_text(7, "Unused")
+  gui.set_field(1, "rrt")
+  gui.set_logic(1, generate_path)
+  ez_option(OPTIONS, gui, 2, "K", 1000)
+  ez_option(OPTIONS, gui, 3, "dt", 0.1)
+  ez_option(OPTIONS, gui, 4, "g", -9.8)
+  ez_option(OPTIONS, gui, 5, "epsilon", 1)
+  ez_option(OPTIONS, gui, 6, "thrust", -9.8)
+  ez_option(OPTIONS, gui, 7, "mass", 1)
   gui.MainWindow.show()
   sys.exit(app.exec_())
