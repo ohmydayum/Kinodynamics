@@ -68,15 +68,15 @@ def get_random_steering():
     return [random.uniform(0, 1), random.uniform(0, 2*np.pi)]
 
 
-def get_new_state(state, steering, driver):
-    a_x = driver["max_force"] / driver["mass"] * steering[0] * np.cos(steering[1])
-    a_y = driver["g"] / driver["mass"] + driver["max_force"] / driver["mass"] * steering[0] * np.sin(steering[1])
+def get_new_state(state, steering, options):
+    a_x = options["thrust"] / options["mass"] * steering[0] * np.cos(steering[1])
+    a_y = options["g"] / options["mass"] + options["thrust"] / options["mass"] * steering[0] * np.sin(steering[1])
 
-    v_x = state[2] + driver["delta_t"] * a_x
-    v_y = state[3] + driver["delta_t"] * a_y
+    v_x = state[2] + options["dt"] * a_x
+    v_y = state[3] + options["dt"] * a_y
 
-    x = state[0] + driver["delta_t"] * v_x + driver["delta_t"]**2 * a_x
-    y = state[1] + driver["delta_t"] * v_y + driver["delta_t"]**2 * a_y
+    x = state[0] + options["dt"] * v_x + options["dt"] ** 2 * a_x
+    y = state[1] + options["dt"] * v_y + options["dt"] ** 2 * a_y
 
     return [x, y, v_x, v_y, a_x, a_y]
 
@@ -109,13 +109,13 @@ def list_to_point_d(l):
     return Point_d(len(l), [FT(e) for e in l])
 
 
-def generate_path(path, robots, obstacles, destinations, other_edges):
+def generate_path(path, robots, obstacles, destinations, other_edges, options):
+    print(options)
     t_start = time.time()
     x_min, x_max, y_min, y_max = get_scene_limits(obstacles)
     destination = point2_to_list(destinations[0])
     obstacles_polygons = [point2_list_to_polygon_2(obstacle) for obstacle in obstacles]
-    K = 10000
-    driver = {"mass": 1, "delta_t": 0.01, "max_force": 20, "g": -9.8}
+    K = int(options["K"])
     robot_initial_position = point2_to_list(robots[0][0])
     robot_initial_speed = [0, 0]
     robot_initial_acceleration = [0, 0]
@@ -124,16 +124,17 @@ def generate_path(path, robots, obstacles, destinations, other_edges):
     edges = [init_edge]
     points_kd_tree = Kd_tree([point2_to_d(robots[0][0])])
     for i in range(K):
-        print("#", i, "/", K)
+        if i%100==0:
+            print("#", i, "/", K)
         last_target = edges[-1].target
-        if are_close_enough(last_target, destination, epsilon=2):
+        if are_close_enough(last_target, destination, epsilon=options["epsilon"]):
             break
         x_rand = get_random_point(x_min, x_max, y_min, y_max)
         edge_near = find_closest_edge(x_rand, edges, points_kd_tree)
         x_near = edge_near.target
         state_near = edge_near.state
         u_rand = get_random_steering()
-        state_new = get_new_state(state_near, u_rand, driver)
+        state_new = get_new_state(state_near, u_rand, options)
         x_new = state_new[0:2]
         if is_path_valid(x_near, x_new, obstacles_polygons):
             current_edge = Edge(previous_edge=edge_near, steering=u_rand, target=x_new, state=state_new)
