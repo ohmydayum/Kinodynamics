@@ -45,10 +45,10 @@ class Edge(object):
 
 def get_closest_k_neighbours(p, tree, k):
     # TODO: fix statistic crash
-    search = K_neighbor_search(tree, p, k, FT(Gmpq(1.0)), True, Euclidean_distance(), False)
-    l = []
-    search.k_neighbors(l)
-    return [p_c for p_c, _ in l]
+    search = K_neighbor_search(tree, p, k, FT(Gmpq(0.0)), True, Euclidean_distance(), False)
+    neighbours = []
+    search.k_neighbors(neighbours)
+    return [p_c for p_c, _ in neighbours]
 
 
 def point_d_to_list(p_d):
