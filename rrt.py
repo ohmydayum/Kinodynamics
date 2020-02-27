@@ -119,15 +119,15 @@ def generate_path(path, robots, obstacles, destinations, other_edges, options):
     robot_initial_state = robot_initial_position + robot_initial_speed
     init_edge = Edge(previous_edge=None, steering=[0, 0], target=robot_initial_position, state=robot_initial_state)
     edges = [init_edge]
-    points_KDTree = cKDTree([robot_initial_state])
+    states_tree = cKDTree([robot_initial_state])
     for i in range(K):
         # if 0 == i % 100:
         print("#", i, "/", K)
         last_state = edges[-1].state
         if are_close_enough(last_state, destination, epsilon=options["epsilon"]):
             break
-        state_rand = get_random_point([(x_min, x_max), (y_min, y_max), (-9999,9999), (-9999, 9999)])
-        edge_near = find_closest_edge(state_rand, edges, points_KDTree)
+        state_rand = get_random_point([(x_min, x_max), (y_min, y_max), (-9999, 9999), (-9999, 9999)])
+        edge_near = find_closest_edge(state_rand, edges, states_tree)
         target_near = edge_near.target
         state_near = edge_near.state
         u_rand = get_random_steering()
@@ -137,7 +137,7 @@ def generate_path(path, robots, obstacles, destinations, other_edges, options):
             current_edge = Edge(previous_edge=edge_near, steering=u_rand, target=target_new, state=state_new)
             edges.append(current_edge)
             other_edges.append(current_edge)
-            points_KDTree = cKDTree(list(points_KDTree.data) + [state_new])
+            states_tree = cKDTree(list(states_tree.data) + [state_new])
     current_edge = edges[-1]
     while current_edge:
         x = current_edge.target[0]
