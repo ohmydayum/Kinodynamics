@@ -220,7 +220,7 @@ if __name__ == "__main__":
   ez_option(OPTIONS, gui, 3, "dt", 0.1)
   ez_option(OPTIONS, gui, 4, "g", -9.8)
   ez_option(OPTIONS, gui, 5, "epsilon", 1)
-  ez_option(OPTIONS, gui, 6, "thrust", -9.8)
+  ez_option(OPTIONS, gui, 6, "thrust", 300)
   ez_option(OPTIONS, gui, 7, "mass", 1)
   gui.MainWindow.show()
   sys.exit(app.exec_())
