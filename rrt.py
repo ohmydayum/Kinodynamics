@@ -6,6 +6,8 @@ from scene_parser import parse_scene_file_path
 from arr2_epec_seg_ex import Point_2, Polygon_2, intersection, Segment_2, K_neighbor_search, Euclidean_distance, FT, \
     Gmpq, Kd_tree, Point_d
 
+from scipy.spatial import cKDTree
+
 
 def log(o):
     print("=== object type:", type(o))
@@ -32,7 +34,7 @@ def get_scene_limits(obstacles):
 
 
 def get_random_point(limits):
-    return list_to_point_d([random.uniform(x_min, x_max) for (x_min, x_max) in limits])
+    return [random.uniform(x_min, x_max) for (x_min, x_max) in limits]
 
 
 class Edge(object):
@@ -43,12 +45,12 @@ class Edge(object):
         self.state = state
 
 
-def get_closest_k_neighbours(p, tree, k):
-    # TODO: fix statistic crash
-    search = K_neighbor_search(tree, p, k, FT(Gmpq(0.0)), True, Euclidean_distance(), False)
-    neighbours = []
-    search.k_neighbors(neighbours)
-    return [p_c for p_c, _ in neighbours]
+def get_closest_k_neighbours(point, tree, k):
+    distances, indexes = tree.query(x=point, k=k)
+    if type(indexes) is list:
+        return [list(tree.data[i]) for i in indexes]
+    else:
+        return [list(tree.data[indexes])]
 
 
 def point_d_to_list(p_d):
@@ -57,8 +59,7 @@ def point_d_to_list(p_d):
 
 def find_closest_edge(point, edges, tree):
     neighbour = get_closest_k_neighbours(point, tree, 1)[0]
-    neighbour = point_d_to_list(neighbour)
-    return list(filter(lambda e: all([FT(e1) == e2 for e1, e2 in zip(e.target, neighbour)]), edges))[0]
+    return list(filter(lambda e: all([e1 == e2 for e1, e2 in zip(e.state, neighbour)]), edges))[0]
 
 
 def get_random_steering():
@@ -118,16 +119,15 @@ def generate_path(path, robots, obstacles, destinations, other_edges, options):
     robot_initial_state = robot_initial_position + robot_initial_speed
     init_edge = Edge(previous_edge=None, steering=[0, 0], target=robot_initial_position, state=robot_initial_state)
     edges = [init_edge]
-    robot_initial_state_d = Point_d(len(robot_initial_state), [FT(e) for e in robot_initial_state])
-    points_kd_tree = Kd_tree([robot_initial_state_d])
+    points_KDTree = cKDTree([robot_initial_state])
     for i in range(K):
         # if 0 == i % 100:
         print("#", i, "/", K)
         last_state = edges[-1].state
         if are_close_enough(last_state, destination, epsilon=options["epsilon"]):
             break
-        state_rand = get_random_point([(x_min, x_max), (y_min, y_max), (-np.inf, +np.inf), (-np.inf, +np.inf)])
-        edge_near = find_closest_edge(state_rand, edges, points_kd_tree)
+        state_rand = get_random_point([(x_min, x_max), (y_min, y_max), (-9999,9999), (-9999, 9999)])
+        edge_near = find_closest_edge(state_rand, edges, points_KDTree)
         target_near = edge_near.target
         state_near = edge_near.state
         u_rand = get_random_steering()
@@ -137,7 +137,7 @@ def generate_path(path, robots, obstacles, destinations, other_edges, options):
             current_edge = Edge(previous_edge=edge_near, steering=u_rand, target=target_new, state=state_new)
             edges.append(current_edge)
             other_edges.append(current_edge)
-            points_kd_tree.insert([list_to_point_d(state_new)])
+            points_KDTree = cKDTree(list(points_KDTree.data) + [state_new])
     current_edge = edges[-1]
     while current_edge:
         x = current_edge.target[0]
