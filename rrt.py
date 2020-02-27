@@ -88,7 +88,6 @@ def point2_list_to_polygon_2(lst):
     return p
 
 
-# TODO
 def is_path_valid(source, target, obstacles):
     movement_segment = Segment_2(Point_2(source[0], source[1]), Point_2(target[0], target[1]))
     for obstacle in obstacles:
@@ -119,8 +118,8 @@ def generate_path(path, robots, obstacles, destinations, other_edges, options):
     robot_initial_state = robot_initial_position + robot_initial_speed
     init_edge = Edge(previous_edge=None, steering=[0, 0], target=robot_initial_position, state=robot_initial_state)
     edges = [init_edge]
-    robot_initial_position_d = Point_d(4, [FT(e) for e in robot_initial_state])
-    points_kd_tree = Kd_tree([robot_initial_position_d])
+    robot_initial_state_d = Point_d(len(robot_initial_state), [FT(e) for e in robot_initial_state])
+    points_kd_tree = Kd_tree([robot_initial_state_d])
     for i in range(K):
         # if 0 == i % 100:
         print("#", i, "/", K)
