@@ -74,7 +74,8 @@ class Polygons_scene():
       gui.queue_animation(anim)
     else:
       for e in self.all_edges:
-         gui.add_segment(*(e.previous_edge.target), *(e.target), Qt.red)
+        for ee in e.sampled_edges:
+           gui.add_segment(*(ee.previous_edge.target), *(ee.target), Qt.red)
 
       for i in range(len(self.path) - 1):
         animations = []
@@ -217,10 +218,10 @@ if __name__ == "__main__":
   gui.set_field(1, "rrt")
   gui.set_logic(1, generate_path)
   ez_option(OPTIONS, gui, 2, "K", 1000)
-  ez_option(OPTIONS, gui, 3, "dt", 0.1)
-  ez_option(OPTIONS, gui, 4, "g", -9.8)
-  ez_option(OPTIONS, gui, 5, "epsilon", 1)
-  ez_option(OPTIONS, gui, 6, "thrust", 300)
+  ez_option(OPTIONS, gui, 3, "dt", 0.5)
+  ez_option(OPTIONS, gui, 4, "g", -0.1)
+  ez_option(OPTIONS, gui, 5, "epsilon", 0.1)
+  ez_option(OPTIONS, gui, 6, "thrust", 3)
   ez_option(OPTIONS, gui, 7, "mass", 1)
   gui.MainWindow.show()
   sys.exit(app.exec_())

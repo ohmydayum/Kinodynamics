@@ -1,6 +1,6 @@
 import re
-f = open("geogabra-export1.txt", "r")
-out = open("obstacle_lines_for_scene1.txt", "w")
+f = open("geogabra-export2.txt", "r")
+out = open("obstacle_lines_for_scene2.txt", "w")
 for line in f:
     polygon = []
     if "\pspolygon" not in line:
