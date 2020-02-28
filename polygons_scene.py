@@ -19,7 +19,7 @@ class Polygons_scene():
     self.destinations = []
     self.gui_destinations = []
     self.path = []
-    self.other_edges = []
+    self.all_edges = []
 
   def draw_scene(self):
     gui.clear_scene()
@@ -73,15 +73,15 @@ class Polygons_scene():
       anim = gui.parallel_animation(*animations)
       gui.queue_animation(anim)
     else:
-      for e in self.other_edges:
-          gui.add_segment(*(e.previous_edge.target), *e.target, Qt.magenta)
+      for e in self.all_edges:
+         gui.add_segment(*(e.previous_edge.target), *(e.target), Qt.red)
 
       for i in range(len(self.path) - 1):
         animations = []
         for j in range(self.number_of_robots):
           start = point_2_to_xy(self.path[i][j])
           end = point_2_to_xy(self.path[i+1][j])
-          s = gui.add_segment(*start, *end, Qt.green)
+          s = gui.add_segment(*start, *end, Qt.blue)
           start = point_2_to_xy(self.path[i][j] + offset)
           end = point_2_to_xy(self.path[i + 1][j] + offset)
           s.line.setZValue(2)
@@ -167,13 +167,13 @@ def set_up_scene():
 
 def generate_path():
   ps.path = []
-  ps.other_edges = []
-  gui.clear_queue()
+  ps.all_edges = []
   path_name = gui.get_field(1)
   gp = importlib.import_module(path_name)
-  gp.generate_path(ps.path, ps.robots, ps.obstacles, ps.destinations, ps.other_edges, OPTIONS)
-  print("Generated path via", path_name + ".generate_path")
+  gp.generate_path(ps.path, ps.robots, ps.obstacles, ps.destinations, ps.all_edges, OPTIONS)
+  gui.clear_queue()
   ps.set_up_animation()
+  print("Generated path via", path_name + ".generate_path")
 
 # def load_path():
 #   ps.path = []
