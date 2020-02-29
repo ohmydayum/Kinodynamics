@@ -24,8 +24,7 @@ class Polygons_scene():
   def draw_scene(self):
     gui.clear_scene()
     self.gui_robots = []
-    for i in range(len(self.robots)):
-      self.gui_robots.append(gui.add_polygon([point_2_to_xy(p) for p in self.robots[i]], Qt.yellow))
+    self.gui_robots.append(gui.add_polygon([point_2_to_xy(p) for p in self.robots[0]], Qt.yellow))
     self.gui_obstacles = []
     for obstacle in self.obstacles:
       self.gui_obstacles.append(gui.add_polygon([point_2_to_xy(p) for p in obstacle], Qt.darkGray))
@@ -73,21 +72,21 @@ class Polygons_scene():
       anim = gui.parallel_animation(*animations)
       gui.queue_animation(anim)
     else:
-      for e in self.all_edges:
-        for ee in e.sampled_edges:
-           gui.add_segment(*(ee.previous_edge.target), *(ee.target), Qt.red)
+      if OPTIONS['re/draw']:
+        for e in self.all_edges:
+          for ee in e.sampled_edges:
+             gui.add_segment(*(ee.previous_edge.target), *(ee.target), Qt.lightGray)
 
       for i in range(len(self.path) - 1):
         animations = []
-        for j in range(self.number_of_robots):
-          start = point_2_to_xy(self.path[i][j])
-          end = point_2_to_xy(self.path[i+1][j])
-          s = gui.add_segment(*start, *end, Qt.blue)
-          start = point_2_to_xy(self.path[i][j] + offset)
-          end = point_2_to_xy(self.path[i + 1][j] + offset)
-          s.line.setZValue(2)
-          gui.add_disc(0.02, *end, fill_color=Qt.blue)
-          animations.append(gui.linear_translation_animation(self.gui_robots[j], *start, *end))
+        start = point_2_to_xy(self.path[i])
+        end = point_2_to_xy(self.path[i+1])
+        s = gui.add_segment(*start, *end, QtGui.QColor.fromRgb(0, 0, 255, 0.5))
+        start = point_2_to_xy(self.path[i])
+        end = point_2_to_xy(self.path[i + 1])
+        s.line.setZValue(2)
+        gui.add_disc(0.02, *end, fill_color=Qt.blue)
+        animations.append(gui.linear_translation_animation(self.gui_robots[0], *start, *end))
         anim = gui.parallel_animation(*animations)
         gui.queue_animation(anim)
 
@@ -197,11 +196,20 @@ def set_option(n, key, options):
   return set_specific_key_to_n
 
 
-def ez_option(options, gui, n, key, value):
+def ez_option_text(options, gui, n, key, value):
   gui.set_button_text(n, key)
   gui.set_field(n, str(value))
   gui.set_logic(n, lambda x: options.update({key: float(gui.get_field(n))}))
   options[key] = float(value)
+
+
+def ez_option_button(options, gui, n, key, value):
+  gui.set_button_text(n, key)
+  def redraw():
+    options.update({key: not options.get(key, value)})
+    ps.set_up_animation()
+  gui.set_logic(n, redraw)
+  options[key] = value
 
 
 if __name__ == "__main__":
@@ -217,11 +225,12 @@ if __name__ == "__main__":
   gui.set_button_text(1, "Generate path")
   gui.set_field(1, "rrt")
   gui.set_logic(1, generate_path)
-  ez_option(OPTIONS, gui, 2, "K", 1000)
-  ez_option(OPTIONS, gui, 3, "dt", 0.5)
-  ez_option(OPTIONS, gui, 4, "g", -0.1)
-  ez_option(OPTIONS, gui, 5, "epsilon", 0.1)
-  ez_option(OPTIONS, gui, 6, "thrust", 3)
-  ez_option(OPTIONS, gui, 7, "mass", 1)
+  ez_option_text(OPTIONS, gui, 2, "K", 1000)
+  ez_option_text(OPTIONS, gui, 3, "dt", 0.5)
+  ez_option_text(OPTIONS, gui, 4, "g", -0.1)
+  ez_option_text(OPTIONS, gui, 5, "epsilon", 0.1)
+  ez_option_text(OPTIONS, gui, 6, "thrust", 3)
+  ez_option_text(OPTIONS, gui, 7, "mass", 1)
+  ez_option_button(OPTIONS, gui, 8, "re/draw", True)
   gui.MainWindow.show()
   sys.exit(app.exec_())

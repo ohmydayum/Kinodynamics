@@ -158,7 +158,7 @@ def generate_path(path, robots, obstacles, destinations, edges, options):
         for e in current_edge.sampled_edges[::-1]:
             x = e.target[0]
             y = e.target[1]
-            path.append([Point_2(x, y)])
+            path.append(Point_2(x, y))
         current_edge = current_edge.previous_edge
     path.reverse()
     edges.pop(0)
