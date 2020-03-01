@@ -135,6 +135,8 @@ def generate_path(path, robots, obstacles, destinations, edges, options):
     destination_state = destination_position + desired_speed
     obstacles_polygons = [point2_list_to_polygon_2(obstacle) for obstacle in obstacles]
     K = int(options["K"])
+    if K == 0:
+        K = +np.inf
     robot_initial_position = point2_to_list(robots[0][0])
     robot_initial_speed = [0, 0]
     initial_state = robot_initial_position + robot_initial_speed
@@ -146,7 +148,9 @@ def generate_path(path, robots, obstacles, destinations, edges, options):
     joint_init_edge = init_edge
     initial_states_tree = cKDTree([initial_state])
     destination_states_tree = cKDTree([destination_state])
-    for i in range(K):
+    i = 0
+    while i < K:
+        i += 1
         if 0 == i % 100:
             print("#", i, "/", K)
         state_rand = get_random_point([(x_min, x_max), (y_min, y_max), (-1e1, 1e1), (-1e1, 1e1)])
