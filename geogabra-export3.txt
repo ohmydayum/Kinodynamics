@@ -1,0 +1,80 @@
+\documentclass[10pt]{article}
+\usepackage{pstricks-add}
+\pagestyle{empty}
+\begin{document}
+\newrgbcolor{xdxdff}{0.49019607843137253 0.49019607843137253 1}
+\newrgbcolor{ududff}{0.30196078431372547 0.30196078431372547 1}
+\newrgbcolor{zzttqq}{0.6 0.2 0}
+\psset{xunit=1cm,yunit=1cm,algebraic=true,dimen=middle,dotstyle=o,dotsize=5pt 0,linewidth=1.6pt,arrowsize=3pt 2,arrowinset=0.25}
+\begin{pspicture*}(-2.5891660405709978,-3.758407212622089)(22.733148009015764,11.01845229151012)
+\multips(0,-3)(0,1){15}{\psline[linestyle=dashed,linecap=1,dash=1.5pt 1.5pt,linewidth=0.4pt,linecolor=lightgray]{c-c}(-2.5891660405709978,0)(22.733148009015764,0)}
+\multips(-2,0)(1,0){26}{\psline[linestyle=dashed,linecap=1,dash=1.5pt 1.5pt,linewidth=0.4pt,linecolor=lightgray]{c-c}(0,-3.758407212622089)(0,11.01845229151012)}
+\psaxes[labelFontSize=\scriptstyle,xAxis=true,yAxis=true,Dx=1,Dy=1,ticksize=-2pt 0,subticks=2]{->}(0,0)(-2.5891660405709978,-3.758407212622089)(22.733148009015764,11.01845229151012)
+\pspolygon[linewidth=2pt,linecolor=zzttqq,fillcolor=zzttqq,fillstyle=solid,opacity=0.1](0,0)(6,0)(5,5)(2.5888955672426732,4.997415477084891)(3,6)(2,6)(2.333448534936137,4.997415477084891)(0,5)(-1,-1)(-1,7)(6,7)(6,-1)(0,-1)
+\pspolygon[linewidth=2pt,linecolor=zzttqq,fillcolor=zzttqq,fillstyle=solid,opacity=0.1](-1,-1)(0,-1)(0,0)(-1,0)
+\psline[linewidth=2pt,linecolor=zzttqq](0,0)(6,0)
+\psline[linewidth=2pt,linecolor=zzttqq](6,0)(5,5)
+\psline[linewidth=2pt,linecolor=zzttqq](5,5)(2.5888955672426732,4.997415477084891)
+\psline[linewidth=2pt,linecolor=zzttqq](2.5888955672426732,4.997415477084891)(3,6)
+\psline[linewidth=2pt,linecolor=zzttqq](3,6)(2,6)
+\psline[linewidth=2pt,linecolor=zzttqq](2,6)(2.333448534936137,4.997415477084891)
+\psline[linewidth=2pt,linecolor=zzttqq](2.333448534936137,4.997415477084891)(0,5)
+\psline[linewidth=2pt,linecolor=zzttqq](0,5)(-1,-1)
+\psline[linewidth=2pt,linecolor=zzttqq](-1,-1)(-1,7)
+\psline[linewidth=2pt,linecolor=zzttqq](-1,7)(6,7)
+\psline[linewidth=2pt,linecolor=zzttqq](6,7)(6,-1)
+\psline[linewidth=2pt,linecolor=zzttqq](6,-1)(0,-1)
+\psline[linewidth=2pt,linecolor=zzttqq](0,-1)(0,0)
+\psline[linewidth=2pt,linecolor=zzttqq](-1,-1)(0,-1)
+\psline[linewidth=2pt,linecolor=zzttqq](0,-1)(0,0)
+\psline[linewidth=2pt,linecolor=zzttqq](0,0)(-1,0)
+\psline[linewidth=2pt,linecolor=zzttqq](-1,0)(-1,-1)
+\begin{scriptsize}
+\psdots[dotsize=4pt 0,dotstyle=*,linecolor=darkgray](0,0)
+\rput[bl](0.07199098422238896,0.12589030803906268){\darkgray{$A$}}
+\psdots[dotstyle=*,linecolor=xdxdff](6,0)
+\rput[bl](6.071990984222386,0.15894815927873204){\xdxdff{$B$}}
+\psdots[dotstyle=*,linecolor=ududff](5,5)
+\rput[bl](5.063726521412469,5.167212622088642){\ududff{$C$}}
+\psdots[dotstyle=*,linecolor=ududff](2.5888955672426732,4.997415477084891)
+\rput[bl](2.6505033809166023,5.167212622088642){\ududff{$D$}}
+\psdots[dotstyle=*,linecolor=ududff](3,6)
+\rput[bl](3.0637265214124696,6.158948159278723){\ududff{$E$}}
+\psdots[dotstyle=*,linecolor=ududff](2,6)
+\rput[bl](2.0719909842223876,6.158948159278723){\ududff{$F$}}
+\psdots[dotstyle=*,linecolor=ududff](2.333448534936137,4.997415477084891)
+\rput[bl](2.4025694966190816,5.167212622088642){\ududff{$G$}}
+\psdots[dotstyle=*,linecolor=xdxdff](0,5)
+\rput[bl](0.07199098422238896,5.167212622088642){\xdxdff{$H$}}
+\psdots[dotstyle=*,linecolor=ududff](0,-1)
+\rput[bl](0.07199098422238896,-0.8327873779113492){\ududff{$I$}}
+\psdots[dotstyle=*,linecolor=ududff](-1,-1)
+\rput[bl](-0.9362734785875277,-0.8327873779113492){\ududff{$J$}}
+\psdots[dotstyle=*,linecolor=ududff](-1,7)
+\rput[bl](-0.9362734785875277,7.167212622088639){\ududff{$K$}}
+\psdots[dotstyle=*,linecolor=ududff](6,7)
+\rput[bl](6.071990984222386,7.167212622088639){\ududff{$L$}}
+\psdots[dotstyle=*,linecolor=ududff](6,-1)
+\rput[bl](6.071990984222386,-0.8327873779113492){\ududff{$M$}}
+\rput[bl](2.997610818933131,-0.2542749812171351){\zzttqq{$a$}}
+\rput[bl](5.757941397445527,2.5556423741547616){\zzttqq{$b$}}
+\rput[bl](3.7909992486851967,5.26638617580765){\zzttqq{$c$}}
+\rput[bl](3.0306686701728003,5.398617580766328){\zzttqq{$d$}}
+\rput[bl](2.4852141247182553,6.274650638617566){\zzttqq{$e$}}
+\rput[bl](1.9067017280240408,5.4316754320059975){\zzttqq{$f$}}
+\rput[bl](1.1629000751314793,5.26638617580765){\zzttqq{$g$}}
+\rput[bl](-0.7709842223891807,2.059774605559721){\zzttqq{$h$}}
+\rput[bl](-0.7379263711495114,3.001923365890298){\zzttqq{$j$}}
+\rput[bl](2.4852141247182553,6.7374605559729375){\zzttqq{$k$}}
+\rput[bl](5.724883546205857,3.001923365890298){\zzttqq{$l$}}
+\rput[bl](2.997610818933131,-0.733613824192341){\zzttqq{$m$}}
+\rput[bl](0.2538091660405707,-0.4856799398948207){\zzttqq{$i$}}
+\psdots[dotsize=4pt 0,dotstyle=*,linecolor=darkgray](-1,0)
+\rput[bl](-0.9362734785875277,0.12589030803906268){\darkgray{$N$}}
+\rput[bl](-0.5065214124718256,-1.262539444027051){\zzttqq{$j_1$}}
+\rput[bl](0.2538091660405707,-0.4856799398948207){\zzttqq{$i_1$}}
+\rput[bl](-1.250323065364387,-0.5187377911344901){\zzttqq{$a_1$}}
+\rput[bl](-1.2668519909842217,-0.4856799398948207){\zzttqq{$n$}}
+\end{scriptsize}
+\end{pspicture*}
+\end{document}

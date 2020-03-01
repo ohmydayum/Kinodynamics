@@ -119,6 +119,9 @@ class GUI(object):
     self.pushButton_8 = QtWidgets.QPushButton("re/draw", self.centralwidget)
     self.pushButton_8.setObjectName("pushButton_8")
     self.gridLayout_2.addWidget(self.pushButton_8, 19, 0, 1, 1)
+    self.pushButton_9 = QtWidgets.QPushButton("two-sided", self.centralwidget)
+    self.pushButton_9.setObjectName("pushButton_9")
+    self.gridLayout_2.addWidget(self.pushButton_9, 20, 0, 1, 1)
     MainWindow.setCentralWidget(self.centralwidget)
     self.statusbar = QtWidgets.QStatusBar(MainWindow)
     self.statusbar.setObjectName("statusbar")
@@ -148,6 +151,7 @@ class GUI(object):
     self.pushButtons.append(self.pushButton_6)
     self.pushButtons.append(self.pushButton_7)
     self.pushButtons.append(self.pushButton_8)
+    self.pushButtons.append(self.pushButton_9)
     self.graphicsView.setScene(self.scene)
     self.graphicsView.setSceneRect(0, 0, 0, 0)
     self.graphicsView.setRenderHints(QPainter.Antialiasing)
@@ -164,6 +168,7 @@ class GUI(object):
     self.pushButton_7.setText(_translate("MainWindow", "PushButton"))
     self.pushButton_3.setText(_translate("MainWindow", "PushButton"))
     self.pushButton_8.setText(_translate("MainWindow", "PushButton"))
+    self.pushButton_9.setText(_translate("MainWindow", "PushButton"))
     self.pushButton_0.setText(_translate("MainWindow", "PushButton"))
     self.pushButton_4.setText(_translate("MainWindow", "PushButton"))
     self.pushButton_2.setText(_translate("MainWindow", "PushButton"))
@@ -254,6 +259,13 @@ class GUI(object):
 
   def set_button_text(self, i, s):
     self.pushButtons[i].setText(s)
+
+  def turn_button_on(self, i, is_on):
+    if is_on:
+      self.pushButtons[i].setStyleSheet("background-color: green")
+    else:
+      self.pushButtons[i].setStyleSheet("background-color: red")
+
 
   def set_program_name(self, s):
     self.MainWindow.setWindowTitle(s)

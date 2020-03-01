@@ -203,12 +203,14 @@ def ez_option_text(options, gui, n, key, value):
 
 
 def ez_option_button(options, gui, n, key, value):
-  gui.set_button_text(n, key)
-  def redraw():
-    options.update({key: not options.get(key, value)})
-    ps.set_up_animation()
-  gui.set_logic(n, redraw)
-  options[key] = value
+    def update_button():
+        options.update({key: not options.get(key, value)})
+        gui.turn_button_on(n, options[key])
+        ps.set_up_animation()
+    gui.set_logic(n, update_button)
+    gui.set_button_text(n, key)
+    gui.turn_button_on(n, value)
+    options[key] = float(value)
 
 
 if __name__ == "__main__":
@@ -231,5 +233,6 @@ if __name__ == "__main__":
   ez_option_text(OPTIONS, gui, 6, "thrust", 3)
   ez_option_text(OPTIONS, gui, 7, "mass", 1)
   ez_option_button(OPTIONS, gui, 8, "re/draw", True)
+  ez_option_button(OPTIONS, gui, 9, "two-sided", True)
   gui.MainWindow.show()
   sys.exit(app.exec_())

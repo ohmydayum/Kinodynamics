@@ -14,10 +14,6 @@ def log(o):
     print("=== object toString:", o)
 
 
-def are_close_enough(p1, p2, epsilon=1e-3):
-    return np.linalg.norm(np.asarray(p1) - np.asarray(p2)) < epsilon
-
-
 def get_scene_limits(obstacles):
     x_min, x_max, y_min, y_max = 4 * [None]
     for obstacle in obstacles:
@@ -155,15 +151,18 @@ def generate_path(path, robots, obstacles, destinations, edges, options):
             print("#", i, "/", K)
         state_rand = get_random_point([(x_min, x_max), (y_min, y_max), (-1e1, 1e1), (-1e1, 1e1)])
         initial_states_tree = expand_RRT(init_edges, obstacles_polygons, options, state_rand, initial_states_tree)
-        if find_distance(initial_states_tree.data[-1], destination_states_tree) < 5e-1:
+        distance_to_dest_tree = find_distance(initial_states_tree.data[-1], destination_states_tree)
+        if distance_to_dest_tree < options["epsilon"]:
             joint_dest_edge = find_closest_edge(initial_states_tree.data[-1], dest_edges, destination_states_tree)
             joint_init_edge = init_edges[-1]
             break
-        destination_states_tree = expand_RRT(dest_edges, obstacles_polygons, options, state_rand, destination_states_tree, reverse=True)
-        if find_distance(destination_states_tree.data[-1], initial_states_tree) < 5e-1:
-            joint_init_edge = find_closest_edge(destination_states_tree.data[-1], init_edges, initial_states_tree)
-            joint_dest_edge = dest_edges[-1]
-            break
+        if options['two-sided']:
+            destination_states_tree = expand_RRT(dest_edges, obstacles_polygons, options, state_rand, destination_states_tree, reverse=True)
+            distance_to_init_tree = find_distance(destination_states_tree.data[-1], initial_states_tree)
+            if distance_to_init_tree < options["epsilon"]:
+                joint_init_edge = find_closest_edge(destination_states_tree.data[-1], init_edges, initial_states_tree)
+                joint_dest_edge = dest_edges[-1]
+                break
 
     path_dest = get_path(joint_dest_edge)
     path_init = get_path(joint_init_edge)
