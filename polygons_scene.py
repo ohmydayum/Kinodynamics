@@ -63,6 +63,10 @@ class Polygons_scene():
   def set_up_animation(self):
     self.draw_scene()
     animations = []
+    if OPTIONS['re/draw']:
+        for e in self.all_edges:
+            for ee in e.sampled_edges:
+                gui.add_segment(*(ee.previous_edge.target), *(ee.target), Qt.lightGray)
     if len(self.path) == 0:
       return
     if len(self.path) == 1:
@@ -72,16 +76,11 @@ class Polygons_scene():
       anim = gui.parallel_animation(*animations)
       gui.queue_animation(anim)
     else:
-      if OPTIONS['re/draw']:
-        for e in self.all_edges:
-          for ee in e.sampled_edges:
-             gui.add_segment(*(ee.previous_edge.target), *(ee.target), Qt.lightGray)
-
       for i in range(len(self.path) - 1):
         animations = []
         start = point_2_to_xy(self.path[i])
         end = point_2_to_xy(self.path[i+1])
-        s = gui.add_segment(*start, *end, QtGui.QColor.fromRgb(0, 0, 255, 0.5))
+        s = gui.add_segment(*start, *end, Qt.red)
         start = point_2_to_xy(self.path[i])
         end = point_2_to_xy(self.path[i + 1])
         s.line.setZValue(2)
