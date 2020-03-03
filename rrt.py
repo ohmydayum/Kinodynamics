@@ -224,11 +224,13 @@ def expand_RRT(current_edges, obstacles_polygons, options, state_rand, states_tr
     u_rand = get_random_steering()
     edge_near = find_closest_edge(state_rand, current_edges, states_tree)
     sampled_edges_along_path = sample_edges_on_path(edge_near, u_rand, options, n=number_sampling_points, reverse=reverse)
+    for i in range(number_sampling_points - 1):
+        if not is_path_valid(sampled_edges_along_path[i].state, sampled_edges_along_path[i + 1].state, obstacles_polygons):
+            return states_tree
     state_new = sampled_edges_along_path[-1].state
     current_edge = Edge(previous_edge=edge_near, steering=u_rand, state=state_new, target=state_new[:2], sampled_edges=sampled_edges_along_path)
-    if all([is_path_valid(sampled_edges_along_path[i].state, sampled_edges_along_path[i + 1].state, obstacles_polygons) for i in range(number_sampling_points-1)]):
-        states_tree = cKDTree(list(states_tree.data) + [state_new])
-        current_edges.append(current_edge)
+    states_tree = cKDTree(list(states_tree.data) + [state_new])
+    current_edges.append(current_edge)
     return states_tree
 
 
