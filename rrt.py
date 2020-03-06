@@ -8,7 +8,7 @@ from scene_parser import parse_scene_file_path
 from arr2_epec_seg_ex import Point_2, Polygon_2, intersection, Segment_2, K_neighbor_search, Euclidean_distance, FT, \
     Gmpq, Kd_tree, Point_d
 
-from scipy.spatial import cKDTree
+from sklearn.neighbors import KDTree
 
 
 def log(o):
@@ -45,11 +45,8 @@ class Edge(object):
 
 
 def get_closest_k_neighbours(point, tree, k):
-    distances, indexes = tree.query(x=point, k=k)
-    if type(indexes) is list:
-        return [list(tree.data[i]) for i in indexes]
-    else:
-        return [list(tree.data[indexes])]
+    distances, indexes = tree.query(np.asarray([point]), k=k)
+    return distances, [list(tree.data[int(i)]) for i in indexes]
 
 
 def point_d_to_list(p_d):
@@ -57,7 +54,8 @@ def point_d_to_list(p_d):
 
 
 def find_closest_edge(point, edges, tree):
-    neighbour_state = get_closest_k_neighbours(point, tree, 1)[0]
+    _, neighbours = get_closest_k_neighbours(point, tree, 1)
+    neighbour_state = neighbours[0]
     return find_edge_by_state(neighbour_state, edges)
 
 
@@ -131,13 +129,13 @@ def sample_edges_on_path(previous_edge, u, dt_percent, options, n, reverse=False
 
 
 def find_distance(point, tree):
-    distances, indexes = tree.query(x=point, k=1)
-    return distances, list(tree.data[indexes])
+    distances, neighbours = get_closest_k_neighbours(point, tree, 1)
+    return distances[0], neighbours[0]
 
 
 def find_edge_by_state(state, edges):
     for edge in edges:
-        if edge.state == state:
+        if all([float(e1)==float(e2) for (e1,e2) in zip(state, edge.state)]):
             return edge
     raise Exception("something went terribly wrong")
 
@@ -167,8 +165,8 @@ def generate_path(path, robots, obstacles, destinations, edges, options):
     dest_edges =[dest_edge]
     joint_dest_edge = dest_edge
     joint_init_edge = init_edge
-    initial_states_tree = cKDTree([initial_state])
-    destination_states_tree = cKDTree([destination_state])
+    initial_states_tree = KDTree(np.asarray([initial_state]))
+    destination_states_tree = KDTree(np.asarray([destination_state]))
     number_sampling_points = 10
     i = 0
     while i < K:
@@ -239,7 +237,7 @@ def expand_RRT(current_edges, obstacles_polygons, options, state_rand, states_tr
             return states_tree
     state_new = sampled_edges_along_path[-1].state
     current_edge = Edge(previous_edge=edge_near, steering=u_rand, state=state_new, target=state_new[:2], sampled_edges=sampled_edges_along_path)
-    states_tree = cKDTree(list(states_tree.data) + [state_new])
+    states_tree = KDTree(np.concatenate((states_tree.get_arrays()[0], np.asarray([state_new]))))
     current_edges.append(current_edge)
     return states_tree
 
