@@ -10,6 +10,9 @@ from arr2_epec_seg_ex import Point_2, Polygon_2, intersection, Segment_2, K_neig
 
 from sklearn.neighbors import KDTree
 
+import matplotlib
+import matplotlib.pyplot as plt
+
 
 def log(o):
     print("=== object type:", type(o))
@@ -205,7 +208,7 @@ def generate_path(path, robots, obstacles, destinations, edges, options):
     t_end = time.time()
     exec_time = t_end - t_start
     print("Running time:", (exec_time))
-    return exec_time
+    return exec_time, i
 
 
 def get_path(first_edge):
@@ -255,20 +258,33 @@ if __name__ == "__main__":
         "two-sided": True,
         "re/draw": True,
         "K": 0,
-        "epsilon": 0.5,
+        "epsilon": 1,
     }
     times = []
     edges_counter = []
     paths_counter = []
+    draws_counter = []
     gs = []
-    n = 10
-    for i in range(n):
+    n = 20
+    for i in range(1,n-1):
         path = []
         edges = []
-        options["g"] = -options["thrust"]*i/n
-        current_time = generate_path(path, robots, obstacles, robots_goals, edges, options)
+        options["g"] = ((i/n)**3*2-0.8)*options["thrust"]
+        current_time, draws = generate_path(path, robots, obstacles, robots_goals, edges, options)
+        draws_counter.append(draws)
         times.append(current_time)
         edges_counter.append(len(edges))
         paths_counter.append(len(path))
         gs.append(options["g"])
-    print(list(zip(gs, times, edges_counter, paths_counter)))
+        print(i, list(zip(gs, times, draws_counter, edges_counter, paths_counter)))
+
+    plt.subplot(2, 1, 1)
+    plt.title("Effects of Gravity (max thrust={}, max duration={}, epsilon={})".format(options["thrust"],options["dt"],options["epsilon"]))
+    plt.plot(gs, times, 'o-')
+    plt.ylabel("execution time [s]")
+
+    plt.subplot(2, 1, 2)
+    plt.plot(gs, draws_counter, 'o-')
+    plt.ylabel("#random draws")
+
+    plt.show()
