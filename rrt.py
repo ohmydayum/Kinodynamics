@@ -73,8 +73,8 @@ def get_new_state(state, steering, dt, options, reverse=False):
         v_x = state[2] - dt * a_x
         v_y = state[3] - dt * a_y
 
-        x = state[0] - dt * v_x - dt ** 2 * a_x
-        y = state[1] - dt * v_y - dt ** 2 * a_y
+        x = state[0] - dt * v_x
+        y = state[1] - dt * v_y
     else:
         a_x = options["thrust"] / options["mass"] * steering[0] * np.cos(steering[1])
         a_y = options["g"] / options["mass"] + options["thrust"] / options["mass"] * steering[0] * np.sin(steering[1])
@@ -82,8 +82,8 @@ def get_new_state(state, steering, dt, options, reverse=False):
         v_x = state[2] + dt * a_x
         v_y = state[3] + dt * a_y
 
-        x = state[0] + dt * v_x + dt ** 2 * a_x
-        y = state[1] + dt * v_y + dt ** 2 * a_y
+        x = state[0] + dt * v_x
+        y = state[1] + dt * v_y
 
     return [x, y, v_x, v_y]
 
@@ -115,9 +115,8 @@ def list_to_point_d(l):
     return Point_d(len(l), [FT(e) for e in l])
 
 
-def sample_edges_on_path(previous_edge, u, options, n, reverse=False):
+def sample_edges_on_path(previous_edge, u, dt_percent, options, n, reverse=False):
     states = [previous_edge.state]
-    dt_percent = random.uniform(0,1)
     for i in range(1, n):
         state = get_new_state(states[-1], u, dt_percent*options["dt"]/n, options, reverse)
         states.append(state)
@@ -170,7 +169,7 @@ def generate_path(path, robots, obstacles, destinations, edges, options):
     joint_init_edge = init_edge
     initial_states_tree = cKDTree([initial_state])
     destination_states_tree = cKDTree([destination_state])
-    number_sampling_points = 5
+    number_sampling_points = 10
     i = 0
     while i < K:
         i += 1
@@ -221,9 +220,20 @@ def get_path(first_edge):
 
 
 def expand_RRT(current_edges, obstacles_polygons, options, state_rand, states_tree, number_sampling_points, reverse = False):
-    u_rand = get_random_steering()
     edge_near = find_closest_edge(state_rand, current_edges, states_tree)
-    sampled_edges_along_path = sample_edges_on_path(edge_near, u_rand, options, n=number_sampling_points, reverse=reverse)
+    best_u = 0
+    best_dt_percent = 0
+    distance = np.inf
+    for i in range(1):
+        dt_percent = random.uniform(0, 1)
+        u_rand = get_random_steering()
+        state = get_new_state(edge_near.state, u_rand, dt_percent * options["dt"], options, reverse)
+        current_distance = np.linalg.norm([e1-e2 for (e1,e2) in zip(state_rand, state)])
+        if current_distance < distance:
+            distance = current_distance
+            best_u = u_rand
+            best_dt_percent = dt_percent
+    sampled_edges_along_path = sample_edges_on_path(edge_near, best_u, best_dt_percent, options, n=number_sampling_points, reverse=reverse)
     for i in range(number_sampling_points - 1):
         if not is_path_valid(sampled_edges_along_path[i].state, sampled_edges_along_path[i + 1].state, obstacles_polygons):
             return states_tree
