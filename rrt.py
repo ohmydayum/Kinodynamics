@@ -1,12 +1,14 @@
 import random
+import sys
 import time
+import cProfile
 
 import numpy as np
 from scene_parser import parse_scene_file_path
 from arr2_epec_seg_ex import Point_2, Polygon_2, intersection, Segment_2, K_neighbor_search, Euclidean_distance, FT, \
     Gmpq, Kd_tree, Point_d
 
-from scipy.spatial import cKDTree
+from sklearn.neighbors import KDTree
 
 
 def log(o):
@@ -43,11 +45,8 @@ class Edge(object):
 
 
 def get_closest_k_neighbours(point, tree, k):
-    distances, indexes = tree.query(x=point, k=k)
-    if type(indexes) is list:
-        return [list(tree.data[i]) for i in indexes]
-    else:
-        return [list(tree.data[indexes])]
+    distances, indexes = tree.query(np.asarray([point]), k=k)
+    return distances, [list(tree.data[int(i)]) for i in indexes]
 
 
 def point_d_to_list(p_d):
@@ -55,8 +54,9 @@ def point_d_to_list(p_d):
 
 
 def find_closest_edge(point, edges, tree):
-    neighbour = get_closest_k_neighbours(point, tree, 1)[0]
-    return list(filter(lambda e: all([e1 == e2 for e1, e2 in zip(e.target, neighbour)]), edges))[0]
+    _, neighbours = get_closest_k_neighbours(point, tree, 1)
+    neighbour_state = neighbours[0]
+    return find_edge_by_state(neighbour_state, edges)
 
 
 def get_random_steering():
@@ -71,8 +71,8 @@ def get_new_state(state, steering, dt, options, reverse=False):
         v_x = state[2] - dt * a_x
         v_y = state[3] - dt * a_y
 
-        x = state[0] - dt * v_x - dt ** 2 * a_x
-        y = state[1] - dt * v_y - dt ** 2 * a_y
+        x = state[0] - dt * v_x
+        y = state[1] - dt * v_y
     else:
         a_x = options["thrust"] / options["mass"] * steering[0] * np.cos(steering[1])
         a_y = options["g"] / options["mass"] + options["thrust"] / options["mass"] * steering[0] * np.sin(steering[1])
@@ -80,8 +80,8 @@ def get_new_state(state, steering, dt, options, reverse=False):
         v_x = state[2] + dt * a_x
         v_y = state[3] + dt * a_y
 
-        x = state[0] + dt * v_x + dt ** 2 * a_x
-        y = state[1] + dt * v_y + dt ** 2 * a_y
+        x = state[0] + dt * v_x
+        y = state[1] + dt * v_y
 
     return [x, y, v_x, v_y]
 
@@ -113,23 +113,42 @@ def list_to_point_d(l):
     return Point_d(len(l), [FT(e) for e in l])
 
 
-def sample_states_on_path(s, u, options, n, reverse=False):
-    states = [s]
+def sample_edges_on_path(previous_edge, u, dt_percent, options, n, reverse=False):
+    states = [previous_edge.state]
     for i in range(1, n):
-        state = get_new_state(states[-1], u, options["dt"]/n, options, reverse)
+        state = get_new_state(states[-1], u, dt_percent*options["dt"]/n, options, reverse)
         states.append(state)
-    return states
+    sampled_edges = []
+    for s in states:
+        target_new = s[:2]
+        current_edge = Edge(previous_edge=previous_edge, steering=u, target=target_new, state=s,
+                            sampled_edges=[])
+        sampled_edges.append(current_edge)
+        previous_edge = current_edge
+    return sampled_edges
 
 
 def find_distance(point, tree):
-    distances, indexes = tree.query(x=point, k=1)
-    return distances
+    distances, neighbours = get_closest_k_neighbours(point, tree, 1)
+    return distances[0], neighbours[0]
+
+
+def find_edge_by_state(state, edges):
+    for edge in edges:
+        if all([float(e1)==float(e2) for (e1,e2) in zip(state, edge.state)]):
+            return edge
+    raise Exception("something went terribly wrong")
 
 
 def generate_path(path, robots, obstacles, destinations, edges, options):
     print(options)
     t_start = time.time()
     x_min, x_max, y_min, y_max = get_scene_limits(obstacles)
+    max_random_speed = 1e1
+    max_random_acceleration = 1e1
+    random_coordinates_limits = [(x_min, x_max), (y_min, y_max),
+                                 (-max_random_speed, max_random_speed),
+                                 (-max_random_acceleration, max_random_acceleration)]
     desired_speed = [0, 0]
     destination_position = point2_to_list(destinations[0])
     destination_state = destination_position + desired_speed
@@ -146,25 +165,28 @@ def generate_path(path, robots, obstacles, destinations, edges, options):
     dest_edges =[dest_edge]
     joint_dest_edge = dest_edge
     joint_init_edge = init_edge
-    initial_states_tree = cKDTree([initial_state])
-    destination_states_tree = cKDTree([destination_state])
+    initial_states_tree = KDTree(np.asarray([initial_state]))
+    destination_states_tree = KDTree(np.asarray([destination_state]))
+    number_sampling_points = 10
     i = 0
     while i < K:
         i += 1
         if 0 == i % 100:
             print("#", i, "/", K)
-        state_rand = get_random_point([(x_min, x_max), (y_min, y_max), (-1e1, 1e1), (-1e1, 1e1)])
-        initial_states_tree = expand_RRT(init_edges, obstacles_polygons, options, state_rand, initial_states_tree)
-        distance_to_dest_tree = find_distance(initial_states_tree.data[-1], destination_states_tree)
-        if distance_to_dest_tree < options["epsilon"]:
-            joint_dest_edge = find_closest_edge(initial_states_tree.data[-1], dest_edges, destination_states_tree)
+        state_rand = get_random_point(random_coordinates_limits)
+        initial_states_tree = expand_RRT(init_edges, obstacles_polygons, options, state_rand, initial_states_tree, number_sampling_points)
+        current_init_state = initial_states_tree.data[-1]
+        distance_to_dest_tree, closest_dest_state = find_distance(current_init_state, destination_states_tree)
+        if distance_to_dest_tree < options["epsilon"] and is_path_valid(current_init_state, closest_dest_state, obstacles_polygons):
+            joint_dest_edge = find_edge_by_state(closest_dest_state, dest_edges)
             joint_init_edge = init_edges[-1]
             break
         if options['two-sided']:
-            destination_states_tree = expand_RRT(dest_edges, obstacles_polygons, options, state_rand, destination_states_tree, reverse=True)
-            distance_to_init_tree = find_distance(destination_states_tree.data[-1], initial_states_tree)
-            if distance_to_init_tree < options["epsilon"]:
-                joint_init_edge = find_closest_edge(destination_states_tree.data[-1], init_edges, initial_states_tree)
+            destination_states_tree = expand_RRT(dest_edges, obstacles_polygons, options, state_rand, destination_states_tree, number_sampling_points, reverse=True)
+            current_dest_state = destination_states_tree.data[-1]
+            distance_to_init_tree, closest_init_state = find_distance(current_dest_state, initial_states_tree)
+            if distance_to_init_tree < options["epsilon"] and is_path_valid(current_dest_state, closest_init_state, obstacles_polygons):
+                joint_init_edge = find_edge_by_state(closest_init_state, init_edges)
                 joint_dest_edge = dest_edges[-1]
                 break
 
@@ -195,24 +217,42 @@ def get_path(first_edge):
     return path
 
 
-def expand_RRT(current_edges, obstacles_polygons, options, state_rand, states_tree, reverse = False):
+def expand_RRT(current_edges, obstacles_polygons, options, state_rand, states_tree, number_sampling_points, reverse = False):
     edge_near = find_closest_edge(state_rand, current_edges, states_tree)
-    state_near = edge_near.state
-    u_rand = get_random_steering()
-    sampled_states_on_path = sample_states_on_path(state_near, u_rand, options, n=5, reverse=reverse)
-    state_new = sampled_states_on_path[-1]
-    if all([is_path_valid(sampled_states_on_path[i], sampled_states_on_path[i + 1], obstacles_polygons) for i in
-            range(len(sampled_states_on_path) - 1)]):
-        states_tree = cKDTree(list(states_tree.data) + [state_new])
-        previous_edge = edge_near
-        sampled_edges = []
-        for s in sampled_states_on_path:
-            target_new = s[:2]
-            current_edge = Edge(previous_edge=previous_edge, steering=u_rand, target=target_new, state=s,
-                                sampled_edges=[])
-            sampled_edges.append(current_edge)
-            previous_edge = current_edge
-        current_edge = Edge(previous_edge=previous_edge, steering=u_rand, state=state_new, target=state_new[:2],
-                            sampled_edges=sampled_edges)
-        current_edges.append(current_edge)
+    best_u = 0
+    best_dt_percent = 0
+    distance = np.inf
+    for i in range(1):
+        dt_percent = random.uniform(0, 1)
+        u_rand = get_random_steering()
+        state = get_new_state(edge_near.state, u_rand, dt_percent * options["dt"], options, reverse)
+        current_distance = np.linalg.norm([e1-e2 for (e1,e2) in zip(state_rand, state)])
+        if current_distance < distance:
+            distance = current_distance
+            best_u = u_rand
+            best_dt_percent = dt_percent
+    sampled_edges_along_path = sample_edges_on_path(edge_near, best_u, best_dt_percent, options, n=number_sampling_points, reverse=reverse)
+    for i in range(number_sampling_points - 1):
+        if not is_path_valid(sampled_edges_along_path[i].state, sampled_edges_along_path[i + 1].state, obstacles_polygons):
+            return states_tree
+    state_new = sampled_edges_along_path[-1].state
+    current_edge = Edge(previous_edge=edge_near, steering=u_rand, state=state_new, target=state_new[:2], sampled_edges=sampled_edges_along_path)
+    states_tree = KDTree(np.concatenate((states_tree.get_arrays()[0], np.asarray([state_new]))))
+    current_edges.append(current_edge)
     return states_tree
+
+
+if __name__ == "__main__":
+    robots_count, robots_goals, robots, obstacles = parse_scene_file_path(sys.argv[1])
+    path = []
+    edges = []
+    options = {
+        "mass": 1,
+        "dt": 1,
+        "thrust": 1,
+        "g": -0.5,
+        "two-sided": True,
+        "K": 10000,
+        "epsilon": 10,
+    }
+    cProfile.run("generate_path(path, robots, obstacles, robots_goals, edges, options)")
