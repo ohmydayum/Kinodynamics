@@ -130,7 +130,7 @@ def sample_edges_on_path(previous_edge, u, dt_percent, options, n, reverse=False
 
 def find_distance(point, tree):
     distances, neighbours = get_closest_k_neighbours(point, tree, 1)
-    return distances[0], neighbours[0]
+    return distances[0][0], neighbours[0]
 
 
 def find_edge_by_state(state, edges):
@@ -167,15 +167,16 @@ def generate_path(path, robots, obstacles, destinations, edges, options):
     joint_init_edge = init_edge
     initial_states_tree = KDTree(np.asarray([initial_state]))
     destination_states_tree = KDTree(np.asarray([destination_state]))
-    number_sampling_points = 10
+    number_sampling_points = 5
     i = 0
     while i < K:
         i += 1
         if 0 == i % 100:
             print("#", i, "/", K)
         state_rand = get_random_point(random_coordinates_limits)
+
         initial_states_tree = expand_RRT(init_edges, obstacles_polygons, options, state_rand, initial_states_tree, number_sampling_points)
-        current_init_state = initial_states_tree.data[-1]
+        current_init_state = initial_states_tree.get_arrays()[0][-1]
         distance_to_dest_tree, closest_dest_state = find_distance(current_init_state, destination_states_tree)
         if distance_to_dest_tree < options["epsilon"] and is_path_valid(current_init_state, closest_dest_state, obstacles_polygons):
             joint_dest_edge = find_edge_by_state(closest_dest_state, dest_edges)
@@ -183,7 +184,7 @@ def generate_path(path, robots, obstacles, destinations, edges, options):
             break
         if options['two-sided']:
             destination_states_tree = expand_RRT(dest_edges, obstacles_polygons, options, state_rand, destination_states_tree, number_sampling_points, reverse=True)
-            current_dest_state = destination_states_tree.data[-1]
+            current_dest_state = destination_states_tree.get_arrays()[0][-1]
             distance_to_init_tree, closest_init_state = find_distance(current_dest_state, initial_states_tree)
             if distance_to_init_tree < options["epsilon"] and is_path_valid(current_dest_state, closest_init_state, obstacles_polygons):
                 joint_init_edge = find_edge_by_state(closest_init_state, init_edges)
@@ -202,7 +203,9 @@ def generate_path(path, robots, obstacles, destinations, edges, options):
     edges.extend(dest_edges)
 
     t_end = time.time()
-    print("Running time:", (t_end - t_start))
+    exec_time = t_end - t_start
+    print("Running time:", (exec_time))
+    return exec_time
 
 
 def get_path(first_edge):
@@ -243,16 +246,29 @@ def expand_RRT(current_edges, obstacles_polygons, options, state_rand, states_tr
 
 
 if __name__ == "__main__":
-    robots_count, robots_goals, robots, obstacles = parse_scene_file_path(sys.argv[1])
-    path = []
-    edges = []
+    robots_count, robots_goals, robots, obstacles = parse_scene_file_path("scene1")
     options = {
         "mass": 1,
-        "dt": 1,
+        "dt": 2,
         "thrust": 1,
-        "g": -0.5,
+        "g": -1,
         "two-sided": True,
-        "K": 10000,
-        "epsilon": 10,
+        "re/draw": True,
+        "K": 0,
+        "epsilon": 0.5,
     }
-    cProfile.run("generate_path(path, robots, obstacles, robots_goals, edges, options)")
+    times = []
+    edges_counter = []
+    paths_counter = []
+    gs = []
+    n = 10
+    for i in range(n):
+        path = []
+        edges = []
+        options["g"] = -options["thrust"]*i/n
+        current_time = generate_path(path, robots, obstacles, robots_goals, edges, options)
+        times.append(current_time)
+        edges_counter.append(len(edges))
+        paths_counter.append(len(path))
+        gs.append(options["g"])
+    print(list(zip(gs, times, edges_counter, paths_counter)))
