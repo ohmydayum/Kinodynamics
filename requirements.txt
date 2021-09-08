@@ -11,7 +11,7 @@ matplotlib==3.2.0
 numpy==1.17.4
 parso==0.5.1
 pickleshare==0.7.5
-Pillow==6.2.1
+Pillow==8.3.2
 profile-viewer==0.1.5
 prompt-toolkit==3.0.2
 pygame==1.9.6
